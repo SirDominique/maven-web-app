@@ -1,3 +1,7 @@
+ def COLOR_MAP = [
+    'SUCCESS': 'good', 
+    'FAILURE': 'danger',
+]
 pipeline {
     agent any
 
@@ -37,14 +41,23 @@ pipeline {
 
         stage ('Upload to Nexus') {
             steps {
-                nexusArtifactUploader artifacts: [[artifactId: '01-maven-web-app', classifier: '', file: '/var/lib/jenkins/workspace/maven-web-app/target/maven-web-app.war', type: 'war']], credentialsId: 'nexus-id', groupId: 'in.ashokit', nexusUrl: '35.94.144.94:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'webapp-release', version: '3.0-RELEASE'
+                nexusArtifactUploader artifacts: [[artifactId: '01-maven-web-app', classifier: '', file: '/var/lib/jenkins/workspace/maven-web-app/target/maven-web-app.war', type: 'war']], credentialsId: 'nexusid', groupId: 'in.ashokit', nexusUrl: '35.91.205.248:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'webapp-release', version: '3.0-RELEASE'
             }
         }
 
         stage ('Deploy to Tomcat') {
             steps {
-                deploy adapters: [tomcat9(credentialsId: 'tomcat-credentials', path: '', url: 'http://34.219.120.95:8080/')], contextPath: null, war: 'target/*.war'
+                deploy adapters: [tomcat9(credentialsId: 'tomcatid', path: '', url: 'http://52.34.74.158:8080/')], contextPath: null, war: 'target/*.war'
             }
+        }
+    }
+
+    post {
+        success {
+            slackSend channel: 'good', color: 'good', message: "Build successful: ${currentBuild.fullDisplayName}"
+        }
+        failure {
+            slackSend channel: 'good', color: 'danger', message: "Build failed: ${currentBuild.fullDisplayName}"
         }
     }
 }
