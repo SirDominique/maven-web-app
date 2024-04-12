@@ -1,4 +1,4 @@
- def COLOR_MAP = [
+def COLOR_MAP = [
     'SUCCESS': 'good', 
     'FAILURE': 'danger',
 ]
@@ -53,20 +53,19 @@ pipeline {
             }
         }
         
-        stage ('Deploy to Tomcat') {
-            steps {
-                deploy adapters: [tomcat9(credentialsId: 'tomcatid', path: '', url: 'http://52.34.74.158:8080/')], contextPath: null, war: 'target/*.war'
-            }
-        }
-
     }
     
     post {
+        always {
+            mail to: 'yawquansah98@gmail.com',
+                 subject: "Maven-web-app-Project - ${currentBuild.result}",
+                 body: "Build ${currentBuild.result} - ${env.BUILD_URL}"
+        }
         success {
-            slackSend channel: 'good', color: 'good', message: "Build successful: ${currentBuild.fullDisplayName}"
+            slackSend channel: 'good', color: COLOR_MAP['SUCCESS'], message: "Build successful: ${currentBuild.fullDisplayName}"
         }
         failure {
-            slackSend channel: 'good', color: 'danger', message: "Build failed: ${currentBuild.fullDisplayName}"
+            slackSend channel: 'good', color: COLOR_MAP['FAILURE'], message: "Build failed: ${currentBuild.fullDisplayName}"
         }
     }
-}    
+}  
